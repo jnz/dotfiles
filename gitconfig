@@ -1,0 +1,8 @@
+[user]
+	signingkey = 3952417BAF66D6F2
+	name = Jan Zwiener
+	email = jan@zwiener.org
+[commit]
+	gpgsign = true
+[core]
+	editor = vi
