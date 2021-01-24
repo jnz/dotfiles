@@ -1,0 +1,11 @@
+{
+    "vim.leader": ",",
+    "vim.vimrc.path": "$HOME/vimfiles/vimrc",
+    "vim.vimrc.enable": true,
+    "workbench.colorTheme": "Default Light+",
+    "editor.fontFamily": "'Cascadia Code PL', 'Courier New', monospace",
+    "vim.useSystemClipboard": true,
+    "vim.visualModeKeyBindings": [
+    
+    ]
+}
