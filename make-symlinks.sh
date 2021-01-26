@@ -7,13 +7,15 @@
 ########## Variables
 
 # dotfiles directory
-dir=~/.dotfiles
+dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+echo "dotfiles directory: $dir"
 
 # old dotfiles backup directory
-olddir=~/.dotfiles/backup
+olddir="$dir/backup"
+echo "saving existing config files to backup directory: $olddir"
 
 # list of files/folders to symlink in homedir
-files="bashrc gitconfig profile"
+files="bashrc gitconfig profile inputrc"
 
 ##########
 
