@@ -3,6 +3,7 @@
 # .make.sh
 # This script creates symlinks from the home directory to any desired dotfiles in ~/dotfiles
 ############################
+set -e
 
 ########## Variables
 
@@ -15,7 +16,7 @@ olddir="$dir/backup"
 echo "saving existing config files to backup directory: $olddir"
 
 # list of files/folders to symlink in homedir
-files="bashrc gitconfig profile inputrc"
+files="gitconfig config/terminator/config"
 
 ##########
 
@@ -39,3 +40,7 @@ for file in $files; do
     ln -s $dir/$file ~/.$file
 done
 
+# Special handling
+echo "source $dir/bashrc" >> ~/.bashrc
+echo "source $dir/profile" >> ~/.profile
+echo "\$include $dir/inputrc" >> ~/.inputrc
