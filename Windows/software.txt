@@ -1,0 +1,10 @@
+gVim
+    https://github.com/vim/vim-win32-installer/releases
+
+Windows 10 Debloater
+    https://github.com/Sycnex/Windows10Debloater
+
+Install WSL2
+
+Install AltDrag
+    https://github.com/RamonUnch/AltDrag
