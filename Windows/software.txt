@@ -1,3 +1,13 @@
+Git for Windows
+
+git clone git@github.com:jnz/dotvim.git ~/vimfiles
+cd ~/vimfiles
+git submodule update --init --recursive
+ln -s ~/vimfiles/ ~/.vim
+ln -s ~/vimfiles/vimrc ~/.vimrc
+echo 'export PATH="~/vimfiles/tools/ripgrep_win/:$PATH"' >> ~/.bashrc
+
+
 gVim
     https://github.com/vim/vim-win32-installer/releases
 
@@ -24,4 +34,40 @@ Install NAPS2 (Not Another PDF Scanner 2)
 
 KeePass Client
     https://keepass.info/
+
+Photoshop CS6
+
+iTunes
+
+Audacity 3.0 Audio Editor
+
+Canon EOS Webcam Utility
+
+CareLink Uploader
+
+CDex
+
+Corsair iCUE Software
+
+FileZilla
+
+GNU Privacy Guard
+
+Gpg4win
+
+NVIDIA Broadcast
+
+OneNote
+
+Samsung Magician
+
+SumatraPDF
+
+tiptoi Manager
+
+TP-Link PLC Utility
+
+VLC media player
+
+AusweisApp2
 
