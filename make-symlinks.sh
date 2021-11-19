@@ -5,6 +5,7 @@
 ############################
 set -e
 
+
 ########## Variables
 
 # dotfiles directory
@@ -16,7 +17,11 @@ olddir="$dir/backup"
 echo "saving existing config files to backup directory: $olddir"
 
 # list of files/folders to symlink in homedir
-files="gitconfig config/terminator/config"
+files="gitconfig config/terminator/config config/nvim/init.vim"
+
+########## Neovim
+
+mkdir -p ~/.config/nvim
 
 ##########
 
