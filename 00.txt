@@ -1,0 +1,262 @@
+#!/bin/bash
+# Pattern:
+# {
+#   Group of commands to execute, but break if there is an error
+# } || true          # if the whole file has set -e active, continue
+# -----------------------------------------------------------
+
+# Basics:
+# -----------------------------------------------------------
+# echo "Adding 'stty -ixon' to .bashrc: don't freeze terminal when pressing ctrl-s"
+if [ ! -f ~/.bashrc ]; then
+    touch ~/.bashrc
+fi
+grep -q "stty -ixon" ~/.bashrc || echo 'stty -ixon' >> ~/.bashrc
+grep -q "export VISUAL" ~/.bashrc || echo 'export VISUAL=vi' >> ~/.bashrc
+grep -q "export EDITOR" ~/.bashrc || echo 'export EDITOR="$VISUAL"' >> ~/.bashrc
+[[ -f ~/.zshrc && ! $(grep "export LSCOLORS=" ~/.zshrc) ]]    && echo "export LSCOLORS=aDxfxcxdxbxegedabagacad" >> ~/.zshrc && echo "Added LSCOLORS to .zshrc."
+[[ -f ~/.bashrc && ! $(grep "export LS_COLORS=" ~/.bashrc) ]] && echo 'export LS_COLORS="$LS_COLORS:di=30;43:ow=30;42"' >> ~/.bashrc && echo "Added LS_COLORS to .bashrc."
+grep -q "shopt -s cdspell" ~/.bashrc || echo "shopt -s cdspell" >> ~/.bashrc   # auto-correct spelling mistakes in directory names
+# -----------------------------------------------------------
+# By default don't grep in the .git folder and tags files, but don't overwrite
+# the Ubuntu defaults in bashrc:
+if ! grep -q "alias grep='grep --color=auto --exclude-dir=\".git\"'" ~/.bashrc; then
+    if grep -q "alias grep='grep --color=auto'" ~/.bashrc; then
+        sed -i "s|alias grep='grep --color=auto'|alias grep='grep --color=auto --exclude-dir=\".git\"'|" ~/.bashrc
+    else
+        echo "alias grep='grep --color=auto --exclude-dir=\".git\"'" >> ~/.bashrc
+    fi
+fi
+# -----------------------------------------------------------
+if [ ! -f ~/.inputrc ]; then
+    touch ~/.inputrc
+fi
+grep -q '$include /etc/inputrc' ~/.inputrc || echo '$include /etc/inputrc' >> ~/.inputrc
+grep -q 'set completion-ignore-case On' ~/.inputrc || echo 'set completion-ignore-case On' >> ~/.inputrc
+grep -q 'set show-all-if-ambiguous On' ~/.inputrc || echo 'set show-all-if-ambiguous On' >> ~/.inputrc
+grep -q 'set bell-style none' ~/.inputrc || echo 'set bell-style none' >> ~/.inputrc
+# -----------------------------------------------------------
+{
+    set -e
+    if command -v apt-get > /dev/null; then
+        sudo apt-get --ignore-missing install cifs-utils
+        if [ ! -d ~/nas ]; then
+            echo 'Creating ~/nas directory'
+            mkdir -p ~/nas
+            chmod 750 nas
+        fi
+        if ! grep -q "//192.168.0.15/home /home/$USER/nas" /etc/fstab; then
+            echo Adding home drive to /etc/fstab
+            sudo sh -c "echo //192.168.0.15/home /home/$USER/nas cifs user,noauto,credentials=/home/$USER/.smbcredentials,iocharset=utf8 0 0 >> /etc/fstab"
+        fi
+        if [ ! -f ~/.smbcredentials ]; then
+            echo "Creating file: .smbcredentials password=XXXXX is not added, so that we don't store a plaintext password here"
+            echo username=jan >> ~/.smbcredentials
+            echo domain=WORKGROUP >> ~/.smbcredentials
+            chmod 600 ~/.smbcredentials
+        fi
+        echo Mounting ~/nas
+        sudo mount -a
+        mount ~/nas
+    fi
+} || true
+# -----------------------------------------------------------
+{
+    set -e
+    # If there is no .ssh directory but the ~/nas directory is there, try to import the ssh keys
+    if [ ! -d ~/.ssh ] && [ -d ~/nas ]; then
+        mkdir -p ~/.ssh
+        cp ~/nas/05_Accounts/01_Private_Keys/ssh_key/id_rsa ~/.ssh/
+        cp ~/nas/05_Accounts/01_Private_Keys/ssh_key/id_rsa.pub ~/.ssh/
+        chmod 700 ~/.ssh/id_rsa
+        eval `ssh-agent -s`
+        ssh-add
+        echo "Copy to remote host (user $USER needs to exist there):"
+        echo "ssh-copy-id -i /home/$USER/.ssh/id_rsa.pub $USER@example.host"
+    elif [ ! -d ~/nas ]; then
+        echo "The ~/nas directory does not exist. Can't import ssh keys."
+    else
+        echo "SSH directory already existing, not importing anything."
+    fi
+} || true
+# -----------------------------------------------------------
+{
+    set -e
+    # try to install gnupg and git
+    if command -v apt-get > /dev/null; then
+        sudo apt install gnupg git
+    fi
+
+    if command -v gpg >/dev/null && [ -d ~/nas ] && [ -z "$(git config --global user.signingkey)" ]; then
+        echo "Restore GPG keys"
+        gpg --import ~/nas/05_Accounts/01_Private_Keys/gpg/janzwiener.asc
+        gpg --import-ownertrust ~/nas/05_Accounts/01_Private_Keys/gpg/janzwiener-ownertrust-gpg.txt
+
+        echo "Checking imported keys"
+        gpg --list-secret-keys --keyid-format LONG
+
+        echo "Adding GPG key to bash profile..."
+        test -r ~/.bash_profile && echo 'export GPG_TTY=$(tty)' >> ~/.bash_profile
+        echo 'export GPG_TTY=$(tty)' >> ~/.profile
+
+        echo "Automatically sign git commits"
+        git config --global user.signingkey 3952417BAF66D6F2
+        git config --global commit.gpgsign true
+        git config --global user.name "Jan Zwiener"
+        git config --global user.email "jan@zwiener.org"
+        git config --global core.editor "vi"
+    else
+        # Optionally print out specific error messages
+        [ ! -d ~/nas ] && echo "The ~/nas directory does not exist."
+        command -v git >/dev/null || echo "git is not installed or not available in PATH."
+        command -v gpg >/dev/null || echo "gpg is not installed or not available in PATH."
+    fi
+} || true
+# -----------------------------------------------------------
+{
+    set -e
+    # try to install git and Vim
+    if command -v apt-get > /dev/null; then
+        sudo apt install git
+        sudo apt install vim vim-gtk3
+    fi
+    if [ ! -d ~/.vim ]; then
+        # the ~/.vim directory does not exist
+        git clone git@github.com:jnz/dotvim.git ~/.vim
+        cd ~/.vim
+        git submodule update --init --recursive
+        echo "if g:is_gui" >> ~/.vimrc.local
+        echo "    colorscheme blueshift" >> ~/.vimrc.local
+        echo "else" >> ~/.vimrc.local
+        echo "    colorscheme wombat256" >> ~/.vimrc.local
+        echo "endif" >> ~/.vimrc.local
+        # Skip path to ripgrep binary, install from package "ripgrep" below
+        # echo 'export PATH="~/.vim/tools/ripgrep_linux/:$PATH"' >> ~/.bashrc
+        ln -s ~/.vim/vimrc ~/.vimrc
+        ln -s ~/.vim/gvimrc ~/.gvimrc
+        # Visual Studio Code
+        echo "Setting up Visual Studio Code config"
+        mkdir -p ~/.config/Code/User
+        ln -s ~/.vim/vscode/settings.json ~/.config/Code/User/settings.json
+        ln -s ~/.vim/vscode/keybindings.json ~/.config/Code/User/keybindings.json
+
+        # try to install a more recent vim
+        if command -v apt-get > /dev/null; then
+            echo "Vim Repo:"
+            echo "  sudo add-apt-repository ppa:jonathonf/vim"
+            echo "  sudo apt update"
+            echo "  sudo apt upgrade"
+            sudo add-apt-repository ppa:jonathonf/vim && sudo apt update && sudo apt upgrade vim
+        fi
+    else
+        echo ".vim directory not configured"
+    fi
+} || true
+# -----------------------------------------------------------
+{
+    set -e
+    # try to install additional packages
+    if command -v apt-get > /dev/null; then
+        sudo apt-get --ignore-missing install build-essential
+        sudo apt-get --ignore-missing install fzf net-tools ripgrep
+        sudo apt-get --ignore-missing install keepass2 iperf3 etherwake terminator
+        echo ""
+        echo "Install manually: synology cloudstation, Discord, Visual Studio Code"
+        echo ""
+        echo "Additional:"
+        echo " - ubuntu-restricted-extras"
+        echo " - chromium-browser"
+        echo " - ffmpeg"
+        echo " - filezilla"
+        echo " - gnome-tweaks (Alt-Drag)"
+        echo ""
+    fi
+} || true
+# -----------------------------------------------------------
+{
+    set -e
+    echo "Check FZF shell integration"
+    if [ -f /usr/share/doc/fzf/examples/key-bindings.bash ]; then
+        grep -q "fzf/examples/key-bindings.bash" ~/.bashrc || echo 'source /usr/share/doc/fzf/examples/key-bindings.bash' >> ~/.bashrc
+    else
+        echo "fzf keybindings not added to bashrc"
+    fi
+} || true
+# -----------------------------------------------------------
+echo ""
+echo "Bash shortcuts:"
+echo "ctrl-r        - search the bash history."
+echo "ctrl-u        - clear line"
+echo "ctrl-w        - delete last word"
+echo "ctrl-x ctrl-e - edit current command line in editor"
+echo "ctrl-y        - paste back deleted"
+echo "alt-b         - word back"
+echo "alt-f         - word forward"
+echo "ctrl-a        - jump to start of line"
+echo "ctrl-e        - end of line"
+echo "Command \"fc\": edit and rerun last command"
+echo ""
+echo "lscpu lsblk lstopo atop"
+echo "free -g"
+echo "lsb_release -a"
+echo ""
+echo ""
+echo "Find:"
+echo "  find . -iname '*example*'"
+echo ""
+echo "grep:"
+echo "  grep -ri 'text' ."
+echo ""
+# -----------------------------------------------------------
+{
+    set -e
+    if command -v timedatectl > /dev/null; then
+        echo "Disable timezone in UTC: timedatectl set-local-rtc 1 --adjust-system-clock"
+        sudo timedatectl set-local-rtc 1 --adjust-system-clock
+    fi
+} || true
+# -----------------------------------------------------------
+{
+    set -e
+    # try to install gnupg and git
+    if command -v apt-get > /dev/null; then
+        # Virtual PIP environment
+        # Setup
+        # -----
+        sudo apt-get install python-is-python3
+        sudo apt-get --ignore-missing install python3-pip python3-venv
+        python3 -m pip install --user virtualenv
+        if [ -f ~/.bashrc ] && ! grep -q "~/.local/bin/" ~/.bashrc; then
+            echo 'export PATH="~/.local/bin/:$PATH"' >> ~/.bashrc
+        fi
+    fi
+    # Create virtual environment
+    # --------------------------
+    #
+    # python3 -m venv mytestenvironment
+    #
+    # Activate virtual environment
+    # ----------------------------
+    #
+    # source mytestenvironment/bin/activate
+    #
+    # Deactivate environment
+    # ----------------------
+    #
+    # deactivate
+    #
+    # Python Installer: pip install -U pyinstaller
+} || true
+
+# Menu Entry
+#   sudo grep menuentry /boot/grub/grub.cfg
+#
+# Search for e.g. "Windows Boot Manager (on /dev/nvme0n1p1)"
+#
+#   sudo vi /etc/default/grub
+#
+#   GRUB_DEFAULT="Windows Boot Manager (on /dev/nvme0n1p1)"
+#
+#   sudo update-grub
+#
+

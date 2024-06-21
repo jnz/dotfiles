@@ -1,6 +1,5 @@
-# dotfiles
+# Jan Zwiener's dotfiles
 
-    git clone git@github.com:jnz/dotfiles.git ~/dotfiles
-    cd ~/dotfiles
-    ./make-symlinks.sh
+Just my private repository of typical config settings.
 
+    source 00.txt
