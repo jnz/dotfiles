@@ -180,6 +180,9 @@ ask_yes_no() {
             echo "else" >> ~/.vimrc.local
             echo "    colorscheme wombat256" >> ~/.vimrc.local
             echo "endif" >> ~/.vimrc.local
+            echo "if has('termguicolors')" >> ~/.vimrc.local
+            echo "    set termguicolors" >> ~/.vimrc.local
+            echo "endif" >> ~/.vimrc.local
         fi
         # echo 'export PATH="~/.vim/tools/ripgrep_linux/:$PATH"' >> ~/.bashrc
         ln -s ~/.vim/vimrc ~/.vimrc
