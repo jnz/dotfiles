@@ -198,6 +198,7 @@ ask_yes_no() {
             git clone https://github.com/jnz/dotvim.git ~/.vim
         fi
         cd ~/.vim
+        chmod 600 ~/.vim/ctrlpcache
         git submodule update --init --recursive
         # adding some default to .vimrc.local if it does not exist
         if [ ! -f ~/.vimrc.local ]; then
