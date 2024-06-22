@@ -166,13 +166,21 @@ ask_yes_no() {
     if ask_yes_no "Do you want to install your Vim config from github?"; then
         # the ~/.vim directory does not exist
         git clone git@github.com:jnz/dotvim.git ~/.vim
+        # Check if the cloning failed
+        if [ $? -ne 0 ]; then
+            echo "SSH clone failed, retrying with HTTPS..."
+            git clone https://github.com/jnz/dotvim.git ~/.vim
+        fi
         cd ~/.vim
         git submodule update --init --recursive
-        echo "if g:is_gui" >> ~/.vimrc.local
-        echo "    colorscheme blueshift" >> ~/.vimrc.local
-        echo "else" >> ~/.vimrc.local
-        echo "    colorscheme wombat256" >> ~/.vimrc.local
-        echo "endif" >> ~/.vimrc.local
+        # adding some default to .vimrc.local if it does not exist
+        if [ ! -f ~/.vimrc.local ]; then
+            echo "if g:is_gui" >> ~/.vimrc.local
+            echo "    colorscheme blueshift" >> ~/.vimrc.local
+            echo "else" >> ~/.vimrc.local
+            echo "    colorscheme wombat256" >> ~/.vimrc.local
+            echo "endif" >> ~/.vimrc.local
+        fi
         # echo 'export PATH="~/.vim/tools/ripgrep_linux/:$PATH"' >> ~/.bashrc
         ln -s ~/.vim/vimrc ~/.vimrc
         ln -s ~/.vim/gvimrc ~/.gvimrc
