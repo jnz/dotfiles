@@ -18,6 +18,7 @@ if [ -f ~/.bashrc ]; then
     # auto-correct spelling mistakes in directory names:
     grep -q "shopt -s cdspell" ~/.bashrc || echo "shopt -s cdspell" >> ~/.bashrc
     if ! grep -q "~/.local/bin/" ~/.bashrc; then
+        mkdir -p ~/.local/bin
         echo 'export PATH="~/.local/bin/:$PATH"' >> ~/.bashrc
     fi
 fi
