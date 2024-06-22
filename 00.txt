@@ -165,15 +165,19 @@ ask_yes_no() {
 # -----------------------------------------------------------
 {
     set -e
-    if ask_yes_no "Do you want to install FZF with git from github directly?"; then
-        git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf
-        ~/.fzf/install
+    if command -v fzf > /dev/null; then
+        echo "fzf detected, not installing"
+    else
+        if ask_yes_no "Do you want to install FZF with git from github directly?"; then
+            git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf
+            ~/.fzf/install
+        fi
     fi
 } || true
 # -----------------------------------------------------------
 {
     set -e
-    if ask_yes_no "Do you want to install Vim via apt-get?"; then
+    if ask_yes_no "Do you want to install an up-to-date Vim via apt-get?"; then
         # try to install git and Vim
         if command -v apt-get > /dev/null; then
             sudo apt install vim vim-gtk3
