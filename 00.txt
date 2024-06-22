@@ -196,12 +196,19 @@ ask_yes_no() {
 } || true
 # -----------------------------------------------------------
 {
-    set -e
+    # set -e errors are ok in this section
     if ask_yes_no "Do you want to install common tools via apt-get"; then
         sudo apt-get --ignore-missing install build-essential
         sudo apt-get --ignore-missing install net-tools
         sudo apt-get --ignore-missing install ripgrep
         sudo apt-get --ignore-missing install keepass2 iperf3 etherwake terminator
+        # Try installing universal-ctags
+        sudo apt-get install -y universal-ctags
+        # Check if the installation failed
+        if [ $? -ne 0 ]; then
+            echo "Failed to install universal-ctags, retrying with exuberant-ctags..."
+            sudo apt-get install -y exuberant-ctags
+        fi
         echo ""
         echo "Install manually: synology cloudstation, Discord, Visual Studio Code"
         echo ""
