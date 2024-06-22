@@ -26,6 +26,19 @@ if [ -f ~/.zshrc ]; then
     [[ -f ~/.zshrc && ! $(grep "export LSCOLORS=" ~/.zshrc) ]]    && echo "export LSCOLORS=aDxfxcxdxbxegedabagacad" >> ~/.zshrc && echo "Added LSCOLORS to .zshrc."
 fi
 # -----------------------------------------------------------
+# Better bash history
+if [ -f ~/.bashrc ]; then
+    grep -q "shopt -s histappend" ~/.bashrc || echo 'shopt -s histappend' >> ~/.bashrc
+    grep -q "shopt -s cmdhist" ~/.bashrc || echo 'shopt -s cmdhist' >> ~/.bashrc
+    grep -q "PROMPT_COMMAND" ~/.bashrc || echo "PROMPT_COMMAND='history -a'" >> ~/.bashrc
+    grep -q "HISTIGNORE" ~/.bashrc || echo 'export HISTIGNORE="&:[ ]*:exit:ls:ll:bg:fg:history"' >> ~/.bashrc
+    grep -q "HISTTIMEFORMAT" ~/.bashrc || echo "HISTTIMEFORMAT='%F %T '" >> ~/.bashrc
+    # this might already be set in bashrc, but I think it's simpler to just append the new values
+    grep -q "HISTSIZE=500000" ~/.bashrc || echo 'HISTSIZE=500000' >> ~/.bashrc
+    grep -q "HISTFILESIZE=100000" ~/.bashrc || echo 'HISTFILESIZE=100000' >> ~/.bashrc
+    grep -q 'HISTCONTROL="erasedups:ignoreboth"' ~/.bashrc || echo 'HISTCONTROL="erasedups:ignoreboth"' >> ~/.bashrc
+fi
+# -----------------------------------------------------------
 # By default don't grep in the .git folder and tags files, but don't overwrite
 # the Ubuntu defaults in bashrc:
 if ! grep -q "alias grep='grep --color=auto --exclude-dir=\".git\" --exclude=tags'" ~/.bashrc; then
