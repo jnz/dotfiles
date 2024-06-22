@@ -320,4 +320,5 @@ echo ""
 echo "grep:"
 echo "  grep -ri 'text' ."
 echo ""
+echo "For Linux x86/x64 some portable tools are installed in .vim/tools/ripgrep_linux"
 
