@@ -17,7 +17,7 @@ if [ -f ~/.bashrc ]; then
     [[ -f ~/.bashrc && ! $(grep "export LS_COLORS=" ~/.bashrc) ]] && echo 'export LS_COLORS="$LS_COLORS:di=30;43:ow=30;42"' >> ~/.bashrc && echo "Added LS_COLORS to .bashrc."
     # auto-correct spelling mistakes in directory names:
     grep -q "shopt -s cdspell" ~/.bashrc || echo "shopt -s cdspell" >> ~/.bashrc
-    if [ -f ~/.bashrc ] && ! grep -q "~/.local/bin/" ~/.bashrc; then
+    if ! grep -q "~/.local/bin/" ~/.bashrc; then
         echo 'export PATH="~/.local/bin/:$PATH"' >> ~/.bashrc
     fi
 fi
@@ -72,13 +72,14 @@ ask_yes_no() {
 # -----------------------------------------------------------
 {
     set -e
-    if command -v apt > /dev/null; then
-        # trying to install git
-        echo "Installing git via apt-get"
-        sudo apt install git
-    fi
     if ! command -v git > /dev/null; then
-        echo "git is not available!"
+        if command -v apt > /dev/null; then
+            # trying to install git
+            echo "Installing git via apt-get"
+            sudo apt install git
+        else
+            echo "git is not available!"
+        fi
     fi
 } || true
 # -----------------------------------------------------------
