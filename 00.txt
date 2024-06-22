@@ -22,9 +22,9 @@ grep -q "shopt -s cdspell" ~/.bashrc || echo "shopt -s cdspell" >> ~/.bashrc   #
 # the Ubuntu defaults in bashrc:
 if ! grep -q "alias grep='grep --color=auto --exclude-dir=\".git\"'" ~/.bashrc; then
     if grep -q "alias grep='grep --color=auto'" ~/.bashrc; then
-        sed -i "s|alias grep='grep --color=auto'|alias grep='grep --color=auto --exclude-dir=\".git\"'|" ~/.bashrc
+        sed -i "s|alias grep='grep --color=auto'|alias grep='grep --color=auto --exclude-dir=\".git\" --exclude=tags'|" ~/.bashrc
     else
-        echo "alias grep='grep --color=auto --exclude-dir=\".git\"'" >> ~/.bashrc
+        echo "alias grep='grep --color=auto --exclude-dir=\".git\" --exclude=tags'" >> ~/.bashrc
     fi
 fi
 # -----------------------------------------------------------
