@@ -105,26 +105,32 @@ ask_yes_no() {
         mount ~/nas
 
         # Import SSH keys from Synology NAS
-        if [ ! -d ~/.ssh ]; then # if there is no .ssh directory, import it from NAS?
-            if ask_yes_no "Do you want to import SSH keys from Synology NAS?"; then
-                mkdir -p ~/.ssh
+        if ask_yes_no "Do you want to import SSH keys from Synology NAS?"; then
+            mkdir -p ~/.ssh
+            if [ ! -f ~/.ssh/id_rsa ]; then
                 cp ~/nas/05_Accounts/01_Private_Keys/ssh_key/id_rsa ~/.ssh/
-                cp ~/nas/05_Accounts/01_Private_Keys/ssh_key/id_rsa.pub ~/.ssh/
-                chmod 700 ~/.ssh/id_rsa
-                eval `ssh-agent -s`
-                ssh-add
-                echo "Copy to remote host (user $USER needs to exist there):"
-                echo "ssh-copy-id -i /home/$USER/.ssh/id_rsa.pub $USER@example.host"
+            else
+                echo "id_rsa already exists"
             fi
-        else
-            echo "Found existing .ssh directory, not touching it"
+            if [ ! -f ~/.ssh/id_rsa.pub ]; then
+                cp ~/nas/05_Accounts/01_Private_Keys/ssh_key/id_rsa.pub ~/.ssh/
+            else
+                echo "id_rsa.pub already exists"
+            fi
+            chmod 700 ~/.ssh/id_rsa
+            eval `ssh-agent -s`
+            ssh-add
+            echo "Copy to remote host (user $USER needs to exist there):"
+            echo "ssh-copy-id -i /home/$USER/.ssh/id_rsa.pub $USER@example.host"
         fi
 
         # trying to install gnupg
         if command -v gpg >/dev/null; then
-            if command -v apt-get > /dev/null; then
-                echo "Installing gnupg"
-                sudo apt install gnupg
+            if ask_yes_no "Do you want to install gnupg via apt-get?"; then
+                if command -v apt-get > /dev/null; then
+                    echo "Installing gnupg"
+                    sudo apt install gnupg
+                fi
             fi
         fi
         # Import GPG keys from Synology NAS
@@ -158,7 +164,7 @@ ask_yes_no() {
 # -----------------------------------------------------------
 {
     set -e
-    if ask_yes_no "Do you want to install FZF from github directly?"; then
+    if ask_yes_no "Do you want to install FZF with git from github directly?"; then
         git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf
         ~/.fzf/install
     fi
