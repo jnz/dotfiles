@@ -229,6 +229,7 @@ ask_yes_no() {
         sudo apt-get --ignore-missing install build-essential
         sudo apt-get --ignore-missing install net-tools
         sudo apt-get --ignore-missing install ripgrep
+        sudo apt-get --ignore-missing install tree
         sudo apt-get --ignore-missing install keepass2 iperf3 etherwake terminator
         # Try installing universal-ctags
         sudo apt-get install -y universal-ctags
@@ -313,7 +314,7 @@ echo "ctrl-e        - end of line"
 echo "Command \"fc\": edit and rerun last command"
 echo ""
 echo "lscpu lsblk lstopo atop"
-echo "free -g"
+echo "free -mht"
 echo "lsb_release -a"
 echo ""
 echo ""
