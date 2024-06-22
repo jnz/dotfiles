@@ -7,21 +7,23 @@
 
 # Basics:
 # -----------------------------------------------------------
-if [ ! -f ~/.bashrc ]; then
-    touch ~/.bashrc
+if [ -f ~/.bashrc ]; then
+    # echo "Adding 'stty -ixon' to .bashrc: don't freeze terminal when pressing ctrl-s"
+    grep -q "stty -ixon" ~/.bashrc || echo 'stty -ixon' >> ~/.bashrc
+    # make vi the default editor
+    grep -q "export VISUAL" ~/.bashrc || echo 'export VISUAL=vi' >> ~/.bashrc
+    grep -q "export EDITOR" ~/.bashrc || echo 'export EDITOR="$VISUAL"' >> ~/.bashrc
+    # Default color for folders is hard to read, change to yellow/orange
+    [[ -f ~/.bashrc && ! $(grep "export LS_COLORS=" ~/.bashrc) ]] && echo 'export LS_COLORS="$LS_COLORS:di=30;43:ow=30;42"' >> ~/.bashrc && echo "Added LS_COLORS to .bashrc."
+    # auto-correct spelling mistakes in directory names:
+    grep -q "shopt -s cdspell" ~/.bashrc || echo "shopt -s cdspell" >> ~/.bashrc
+    if [ -f ~/.bashrc ] && ! grep -q "~/.local/bin/" ~/.bashrc; then
+        echo 'export PATH="~/.local/bin/:$PATH"' >> ~/.bashrc
+    fi
 fi
-# echo "Adding 'stty -ixon' to .bashrc: don't freeze terminal when pressing ctrl-s"
-grep -q "stty -ixon" ~/.bashrc || echo 'stty -ixon' >> ~/.bashrc
-# make vi the default editor
-grep -q "export VISUAL" ~/.bashrc || echo 'export VISUAL=vi' >> ~/.bashrc
-grep -q "export EDITOR" ~/.bashrc || echo 'export EDITOR="$VISUAL"' >> ~/.bashrc
-# Default color for folders is hard to read, change to yellow/orange
-[[ -f ~/.zshrc && ! $(grep "export LSCOLORS=" ~/.zshrc) ]]    && echo "export LSCOLORS=aDxfxcxdxbxegedabagacad" >> ~/.zshrc && echo "Added LSCOLORS to .zshrc."
-[[ -f ~/.bashrc && ! $(grep "export LS_COLORS=" ~/.bashrc) ]] && echo 'export LS_COLORS="$LS_COLORS:di=30;43:ow=30;42"' >> ~/.bashrc && echo "Added LS_COLORS to .bashrc."
-# auto-correct spelling mistakes in directory names:
-grep -q "shopt -s cdspell" ~/.bashrc || echo "shopt -s cdspell" >> ~/.bashrc
-if [ -f ~/.bashrc ] && ! grep -q "~/.local/bin/" ~/.bashrc; then
-    echo 'export PATH="~/.local/bin/:$PATH"' >> ~/.bashrc
+# on macOS / zsh
+if [ -f ~/.zshrc ]; then
+    [[ -f ~/.zshrc && ! $(grep "export LSCOLORS=" ~/.zshrc) ]]    && echo "export LSCOLORS=aDxfxcxdxbxegedabagacad" >> ~/.zshrc && echo "Added LSCOLORS to .zshrc."
 fi
 # -----------------------------------------------------------
 # By default don't grep in the .git folder and tags files, but don't overwrite
