@@ -258,13 +258,14 @@ ask_yes_no() {
 # -----------------------------------------------------------
 {
     set -e
-    if ask_yes_no "Do you want to install python?"; then
+    if ask_yes_no "Do you want to install Python via apt-get?"; then
         # Virtual PIP environment
         # Setup
         # -----
-        sudo apt-get install python-is-python3
+        sudo apt-get --ignore-missing install python3
         sudo apt-get --ignore-missing install python3-pip python3-venv
         python3 -m pip install --user virtualenv
+        sudo apt-get install python-is-python3
     fi
     # Create virtual environment
     # --------------------------
