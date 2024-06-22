@@ -7,20 +7,26 @@
 
 # Basics:
 # -----------------------------------------------------------
-# echo "Adding 'stty -ixon' to .bashrc: don't freeze terminal when pressing ctrl-s"
 if [ ! -f ~/.bashrc ]; then
     touch ~/.bashrc
 fi
+# echo "Adding 'stty -ixon' to .bashrc: don't freeze terminal when pressing ctrl-s"
 grep -q "stty -ixon" ~/.bashrc || echo 'stty -ixon' >> ~/.bashrc
+# make vi the default editor
 grep -q "export VISUAL" ~/.bashrc || echo 'export VISUAL=vi' >> ~/.bashrc
 grep -q "export EDITOR" ~/.bashrc || echo 'export EDITOR="$VISUAL"' >> ~/.bashrc
+# Default color for folders is hard to read, change to yellow/orange
 [[ -f ~/.zshrc && ! $(grep "export LSCOLORS=" ~/.zshrc) ]]    && echo "export LSCOLORS=aDxfxcxdxbxegedabagacad" >> ~/.zshrc && echo "Added LSCOLORS to .zshrc."
 [[ -f ~/.bashrc && ! $(grep "export LS_COLORS=" ~/.bashrc) ]] && echo 'export LS_COLORS="$LS_COLORS:di=30;43:ow=30;42"' >> ~/.bashrc && echo "Added LS_COLORS to .bashrc."
-grep -q "shopt -s cdspell" ~/.bashrc || echo "shopt -s cdspell" >> ~/.bashrc   # auto-correct spelling mistakes in directory names
+# auto-correct spelling mistakes in directory names:
+grep -q "shopt -s cdspell" ~/.bashrc || echo "shopt -s cdspell" >> ~/.bashrc
+if [ -f ~/.bashrc ] && ! grep -q "~/.local/bin/" ~/.bashrc; then
+    echo 'export PATH="~/.local/bin/:$PATH"' >> ~/.bashrc
+fi
 # -----------------------------------------------------------
 # By default don't grep in the .git folder and tags files, but don't overwrite
 # the Ubuntu defaults in bashrc:
-if ! grep -q "alias grep='grep --color=auto --exclude-dir=\".git\"'" ~/.bashrc; then
+if ! grep -q "alias grep='grep --color=auto --exclude-dir=\".git\" --exclude=tags'" ~/.bashrc; then
     if grep -q "alias grep='grep --color=auto'" ~/.bashrc; then
         sed -i "s|alias grep='grep --color=auto'|alias grep='grep --color=auto --exclude-dir=\".git\" --exclude=tags'|" ~/.bashrc
     else
@@ -36,91 +42,128 @@ grep -q 'set completion-ignore-case On' ~/.inputrc || echo 'set completion-ignor
 grep -q 'set show-all-if-ambiguous On' ~/.inputrc || echo 'set show-all-if-ambiguous On' >> ~/.inputrc
 grep -q 'set bell-style none' ~/.inputrc || echo 'set bell-style none' >> ~/.inputrc
 # -----------------------------------------------------------
+# Ask user for yes/no
+ask_yes_no() {
+    local question="$1"
+    while true; do
+        read -p "$question (y/n): " yn
+        case $yn in
+            [Yy]* ) return 0;;
+            [Nn]* ) return 1;;
+            * ) echo "Yes or No (y or n).";;
+        esac
+    done
+}
+# -----------------------------------------------------------
 {
     set -e
-    if command -v apt-get > /dev/null; then
-        sudo apt-get --ignore-missing install cifs-utils
-        if [ ! -d ~/nas ]; then
-            echo 'Creating ~/nas directory'
-            mkdir -p ~/nas
-            chmod 750 nas
+    if command -v apt > /dev/null; then
+        # trying to install git
+        echo "Installing git via apt-get"
+        sudo apt install git
+    fi
+    if ! command -v git > /dev/null; then
+        echo "git is not available!"
+    fi
+} || true
+# -----------------------------------------------------------
+{
+    set -e
+    if ask_yes_no "Do you want to mount the local Synology NAS?"; then
+        if command -v apt-get > /dev/null; then
+            sudo apt-get --ignore-missing install cifs-utils
         fi
+        echo 'Creating ~/nas directory'
+        mkdir -p ~/nas
+        chmod 750 nas
         if ! grep -q "//192.168.0.15/home /home/$USER/nas" /etc/fstab; then
             echo Adding home drive to /etc/fstab
             sudo sh -c "echo //192.168.0.15/home /home/$USER/nas cifs user,noauto,credentials=/home/$USER/.smbcredentials,iocharset=utf8 0 0 >> /etc/fstab"
         fi
-        if [ ! -f ~/.smbcredentials ]; then
-            echo "Creating file: .smbcredentials password=XXXXX is not added, so that we don't store a plaintext password here"
-            echo username=jan >> ~/.smbcredentials
-            echo domain=WORKGROUP >> ~/.smbcredentials
-            chmod 600 ~/.smbcredentials
-        fi
+        echo "Creating file: .smbcredentials password=XXXXX is not added, so that we don't store a plaintext password here"
+        echo username=jan > ~/.smbcredentials
+        echo domain=WORKGROUP >> ~/.smbcredentials
+        chmod 600 ~/.smbcredentials
+
         echo Mounting ~/nas
         sudo mount -a
         mount ~/nas
+
+        # Import SSH keys from Synology NAS
+        if [ ! -d ~/.ssh ]; then # if there is no .ssh directory, import it from NAS?
+            if ask_yes_no "Do you want to import SSH keys from Synology NAS?"; then
+                mkdir -p ~/.ssh
+                cp ~/nas/05_Accounts/01_Private_Keys/ssh_key/id_rsa ~/.ssh/
+                cp ~/nas/05_Accounts/01_Private_Keys/ssh_key/id_rsa.pub ~/.ssh/
+                chmod 700 ~/.ssh/id_rsa
+                eval `ssh-agent -s`
+                ssh-add
+                echo "Copy to remote host (user $USER needs to exist there):"
+                echo "ssh-copy-id -i /home/$USER/.ssh/id_rsa.pub $USER@example.host"
+            fi
+        else
+            echo "Found existing .ssh directory, not touching it"
+        fi
+
+        # trying to install gnupg
+        if command -v gpg >/dev/null; then
+            if command -v apt-get > /dev/null; then
+                echo "Installing gnupg"
+                sudo apt install gnupg
+            fi
+        fi
+        # Import GPG keys from Synology NAS
+        if command -v gpg >/dev/null; then
+            if ask_yes_no "Do you want to import GPG keys from Synology NAS?"; then
+                echo "Restore GPG keys"
+                gpg --import ~/nas/05_Accounts/01_Private_Keys/gpg/janzwiener.asc
+                gpg --import-ownertrust ~/nas/05_Accounts/01_Private_Keys/gpg/janzwiener-ownertrust-gpg.txt
+
+                echo "Checking imported keys"
+                gpg --list-secret-keys --keyid-format LONG
+
+                echo "Adding GPG key to bash profile..."
+                test -r ~/.bash_profile && echo 'export GPG_TTY=$(tty)' >> ~/.bash_profile
+                echo 'export GPG_TTY=$(tty)' >> ~/.profile
+
+                echo "Automatically sign git commits"
+                if [ -z "$(git config --global user.signingkey)" ]; then
+                    git config --global user.signingkey 3952417BAF66D6F2
+                    git config --global commit.gpgsign true
+                    git config --global user.name "Jan Zwiener"
+                    git config --global user.email "jan@zwiener.org"
+                    git config --global core.editor "vi"
+                fi
+            fi
+        else
+            echo "GPG not installed, no keys imported"
+        fi
     fi
 } || true
 # -----------------------------------------------------------
 {
     set -e
-    # If there is no .ssh directory but the ~/nas directory is there, try to import the ssh keys
-    if [ ! -d ~/.ssh ] && [ -d ~/nas ]; then
-        mkdir -p ~/.ssh
-        cp ~/nas/05_Accounts/01_Private_Keys/ssh_key/id_rsa ~/.ssh/
-        cp ~/nas/05_Accounts/01_Private_Keys/ssh_key/id_rsa.pub ~/.ssh/
-        chmod 700 ~/.ssh/id_rsa
-        eval `ssh-agent -s`
-        ssh-add
-        echo "Copy to remote host (user $USER needs to exist there):"
-        echo "ssh-copy-id -i /home/$USER/.ssh/id_rsa.pub $USER@example.host"
-    elif [ ! -d ~/nas ]; then
-        echo "The ~/nas directory does not exist. Can't import ssh keys."
-    else
-        echo "SSH directory already existing, not importing anything."
+    if ask_yes_no "Do you want to install FZF from github directly?"; then
+        git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf
+        ~/.fzf/install
     fi
 } || true
 # -----------------------------------------------------------
 {
     set -e
-    # try to install gnupg and git
-    if command -v apt-get > /dev/null; then
-        sudo apt install gnupg git
-    fi
-
-    if command -v gpg >/dev/null && [ -d ~/nas ] && [ -z "$(git config --global user.signingkey)" ]; then
-        echo "Restore GPG keys"
-        gpg --import ~/nas/05_Accounts/01_Private_Keys/gpg/janzwiener.asc
-        gpg --import-ownertrust ~/nas/05_Accounts/01_Private_Keys/gpg/janzwiener-ownertrust-gpg.txt
-
-        echo "Checking imported keys"
-        gpg --list-secret-keys --keyid-format LONG
-
-        echo "Adding GPG key to bash profile..."
-        test -r ~/.bash_profile && echo 'export GPG_TTY=$(tty)' >> ~/.bash_profile
-        echo 'export GPG_TTY=$(tty)' >> ~/.profile
-
-        echo "Automatically sign git commits"
-        git config --global user.signingkey 3952417BAF66D6F2
-        git config --global commit.gpgsign true
-        git config --global user.name "Jan Zwiener"
-        git config --global user.email "jan@zwiener.org"
-        git config --global core.editor "vi"
-    else
-        # Optionally print out specific error messages
-        [ ! -d ~/nas ] && echo "The ~/nas directory does not exist."
-        command -v git >/dev/null || echo "git is not installed or not available in PATH."
-        command -v gpg >/dev/null || echo "gpg is not installed or not available in PATH."
+    if ask_yes_no "Do you want to install Vim via apt-get?"; then
+        # try to install git and Vim
+        if command -v apt-get > /dev/null; then
+            sudo apt install vim vim-gtk3
+            # trying to upgrade
+            sudo add-apt-repository ppa:jonathonf/vim && sudo apt update && sudo apt upgrade vim
+        fi
     fi
 } || true
 # -----------------------------------------------------------
 {
-    set -e
-    # try to install git and Vim
-    if command -v apt-get > /dev/null; then
-        sudo apt install git
-        sudo apt install vim vim-gtk3
-    fi
-    if [ ! -d ~/.vim ]; then
+    # set -e # here we don't want to break on an error here
+    if ask_yes_no "Do you want to install your Vim config from github (this will add ripgrep)?"; then
         # the ~/.vim directory does not exist
         git clone git@github.com:jnz/dotvim.git ~/.vim
         cd ~/.vim
@@ -130,8 +173,7 @@ grep -q 'set bell-style none' ~/.inputrc || echo 'set bell-style none' >> ~/.inp
         echo "else" >> ~/.vimrc.local
         echo "    colorscheme wombat256" >> ~/.vimrc.local
         echo "endif" >> ~/.vimrc.local
-        # Skip path to ripgrep binary, install from package "ripgrep" below
-        # echo 'export PATH="~/.vim/tools/ripgrep_linux/:$PATH"' >> ~/.bashrc
+        echo 'export PATH="~/.vim/tools/ripgrep_linux/:$PATH"' >> ~/.bashrc
         ln -s ~/.vim/vimrc ~/.vimrc
         ln -s ~/.vim/gvimrc ~/.gvimrc
         # Visual Studio Code
@@ -139,26 +181,14 @@ grep -q 'set bell-style none' ~/.inputrc || echo 'set bell-style none' >> ~/.inp
         mkdir -p ~/.config/Code/User
         ln -s ~/.vim/vscode/settings.json ~/.config/Code/User/settings.json
         ln -s ~/.vim/vscode/keybindings.json ~/.config/Code/User/keybindings.json
-
-        # try to install a more recent vim
-        if command -v apt-get > /dev/null; then
-            echo "Vim Repo:"
-            echo "  sudo add-apt-repository ppa:jonathonf/vim"
-            echo "  sudo apt update"
-            echo "  sudo apt upgrade"
-            sudo add-apt-repository ppa:jonathonf/vim && sudo apt update && sudo apt upgrade vim
-        fi
-    else
-        echo ".vim directory not configured"
     fi
 } || true
 # -----------------------------------------------------------
 {
     set -e
-    # try to install additional packages
-    if command -v apt-get > /dev/null; then
+    if ask_yes_no "Do you want to install common tools via apt-get"; then
         sudo apt-get --ignore-missing install build-essential
-        sudo apt-get --ignore-missing install fzf net-tools ripgrep
+        sudo apt-get --ignore-missing install net-tools
         sudo apt-get --ignore-missing install keepass2 iperf3 etherwake terminator
         echo ""
         echo "Install manually: synology cloudstation, Discord, Visual Studio Code"
@@ -175,13 +205,51 @@ grep -q 'set bell-style none' ~/.inputrc || echo 'set bell-style none' >> ~/.inp
 # -----------------------------------------------------------
 {
     set -e
-    echo "Check FZF shell integration"
-    if [ -f /usr/share/doc/fzf/examples/key-bindings.bash ]; then
-        grep -q "fzf/examples/key-bindings.bash" ~/.bashrc || echo 'source /usr/share/doc/fzf/examples/key-bindings.bash' >> ~/.bashrc
-    else
-        echo "fzf keybindings not added to bashrc"
+    if ask_yes_no "Do you want to set RTC to local timezone?"; then
+        echo "Disable timezone in UTC: timedatectl set-local-rtc 1 --adjust-system-clock"
+        sudo timedatectl set-local-rtc 1 --adjust-system-clock
     fi
 } || true
+# -----------------------------------------------------------
+{
+    set -e
+    if ask_yes_no "Do you want to install python?"; then
+        # Virtual PIP environment
+        # Setup
+        # -----
+        sudo apt-get install python-is-python3
+        sudo apt-get --ignore-missing install python3-pip python3-venv
+        python3 -m pip install --user virtualenv
+    fi
+    # Create virtual environment
+    # --------------------------
+    #
+    # python3 -m venv mytestenvironment
+    #
+    # Activate virtual environment
+    # ----------------------------
+    #
+    # source mytestenvironment/bin/activate
+    #
+    # Deactivate environment
+    # ----------------------
+    #
+    # deactivate
+    #
+    # Python Installer: pip install -U pyinstaller
+} || true
+# -----------------------------------------------------------
+# Menu Entry
+#   sudo grep menuentry /boot/grub/grub.cfg
+#
+# Search for e.g. "Windows Boot Manager (on /dev/nvme0n1p1)"
+#
+#   sudo vi /etc/default/grub
+#
+#   GRUB_DEFAULT="Windows Boot Manager (on /dev/nvme0n1p1)"
+#
+#   sudo update-grub
+#
 # -----------------------------------------------------------
 echo ""
 echo "Bash shortcuts:"
@@ -207,56 +275,4 @@ echo ""
 echo "grep:"
 echo "  grep -ri 'text' ."
 echo ""
-# -----------------------------------------------------------
-{
-    set -e
-    if command -v timedatectl > /dev/null; then
-        echo "Disable timezone in UTC: timedatectl set-local-rtc 1 --adjust-system-clock"
-        sudo timedatectl set-local-rtc 1 --adjust-system-clock
-    fi
-} || true
-# -----------------------------------------------------------
-{
-    set -e
-    # try to install gnupg and git
-    if command -v apt-get > /dev/null; then
-        # Virtual PIP environment
-        # Setup
-        # -----
-        sudo apt-get install python-is-python3
-        sudo apt-get --ignore-missing install python3-pip python3-venv
-        python3 -m pip install --user virtualenv
-        if [ -f ~/.bashrc ] && ! grep -q "~/.local/bin/" ~/.bashrc; then
-            echo 'export PATH="~/.local/bin/:$PATH"' >> ~/.bashrc
-        fi
-    fi
-    # Create virtual environment
-    # --------------------------
-    #
-    # python3 -m venv mytestenvironment
-    #
-    # Activate virtual environment
-    # ----------------------------
-    #
-    # source mytestenvironment/bin/activate
-    #
-    # Deactivate environment
-    # ----------------------
-    #
-    # deactivate
-    #
-    # Python Installer: pip install -U pyinstaller
-} || true
-
-# Menu Entry
-#   sudo grep menuentry /boot/grub/grub.cfg
-#
-# Search for e.g. "Windows Boot Manager (on /dev/nvme0n1p1)"
-#
-#   sudo vi /etc/default/grub
-#
-#   GRUB_DEFAULT="Windows Boot Manager (on /dev/nvme0n1p1)"
-#
-#   sudo update-grub
-#
 
