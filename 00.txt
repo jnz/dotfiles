@@ -55,11 +55,10 @@ fi
 # By default don't grep in the .git folder and tags files, but don't overwrite
 # the Ubuntu defaults in bashrc:
 if ! grep -q "alias grep='grep --color=auto --exclude-dir=\".git\" --exclude=tags'" ~/.bashrc; then
-    if grep -q "alias grep='grep --color=auto'" ~/.bashrc; then
-        sed -i "s|alias grep='grep --color=auto'|alias grep='grep --color=auto --exclude-dir=\".git\" --exclude=tags'|" ~/.bashrc
-    else
-        echo "alias grep='grep --color=auto --exclude-dir=\".git\" --exclude=tags'" >> ~/.bashrc
-    fi
+    echo "alias grep='grep --color=auto --exclude-dir=\".git\" --exclude=tags'" >> ~/.bashrc
+fi
+if ! grep -q "alias ls='ls --color=auto --group-directories-first'" ~/.bashrc; then
+    echo "alias ls='ls --color=auto --group-directories-first'" >> ~/.bashrc
 fi
 # -----------------------------------------------------------
 if [ ! -f ~/.inputrc ]; then
