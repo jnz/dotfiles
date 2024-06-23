@@ -21,8 +21,18 @@ if [ -f ~/.bashrc ]; then
         mkdir -p ~/.local/bin
         echo 'export PATH="~/.local/bin/:$PATH"' >> ~/.bashrc
     fi
-    # grep -q "GIT_PS1_SHOWDIRTYSTATE=1" ~/.bashrc || echo 'GIT_PS1_SHOWDIRTYSTATE=1' >> ~/.bashrc
-    # PROMPT_COMMAND="${PROMPT_COMMAND:+$PROMPT_COMMAND; }__git_ps1 '\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\[\033[01;31m\]\[\033[00m\]' '\\\$ '"
+    # Adding the current git branch to the prompt with __git_ps1,
+    # also I don't like the dark blue in the default PS1.
+    # This is not using PROMPT_COMMAND and is compatible with the Python
+    # virtual environment (VENV) PS1 modifications
+    grep -q "GIT_PS1_SHOWDIRTYSTATE" ~/.bashrc || echo 'GIT_PS1_SHOWDIRTYSTATE=1' >> ~/.bashrc
+    grep -q "RESET=" ~/.bashrc || echo 'RESET="\[\017\]"' >> ~/.bashrc
+    grep -q "NORMAL=" ~/.bashrc || echo 'NORMAL="\[\033[0m\]"' >> ~/.bashrc
+    grep -q "GREEN=" ~/.bashrc || echo 'GREEN="\[\033[32;1m\]"' >> ~/.bashrc
+    grep -q "PURPLE=" ~/.bashrc || echo 'PURPLE="\[\033[35;1m\]"' >> ~/.bashrc
+    grep -q "CYAN=" ~/.bashrc || echo 'CYAN="\[\033[36;1m\]"' >> ~/.bashrc
+    grep -q ".*PS1=.*__git_ps1.*" ~/.bashrc || echo 'export PS1="${RESET}${GREEN}\u@\h${NORMAL}:${CYAN}\w${PURPLE}\$(__git_ps1)${NORMAL}\$ "' >> ~/.bashrc
+
 fi
 # on macOS / zsh
 if [ -f ~/.zshrc ]; then
