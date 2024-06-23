@@ -56,8 +56,8 @@ fi
 if ! grep -q "alias grep='grep --color=auto --exclude-dir=\".git\" --exclude=tags'" ~/.bashrc; then
     echo "alias grep='grep --color=auto --exclude-dir=\".git\" --exclude=tags'" >> ~/.bashrc
 fi
-if ! grep -q "alias ls='ls --color=auto --group-directories-first'" ~/.bashrc; then
-    echo "alias ls='ls --color=auto --group-directories-first'" >> ~/.bashrc
+if ! grep -q "alias ls='ls --color=auto --group-directories-first --human-readable'" ~/.bashrc; then
+    echo "alias ls='ls --color=auto --group-directories-first --human-readable'" >> ~/.bashrc
 fi
 # -----------------------------------------------------------
 if [ ! -f ~/.inputrc ]; then
