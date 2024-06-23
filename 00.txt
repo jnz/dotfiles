@@ -32,14 +32,13 @@ if [ -f ~/.bashrc ]; then
     grep -q "PURPLE=" ~/.bashrc || echo 'PURPLE="\[\033[35;1m\]"' >> ~/.bashrc
     grep -q "CYAN=" ~/.bashrc || echo 'CYAN="\[\033[36;1m\]"' >> ~/.bashrc
     grep -q ".*PS1=.*__git_ps1.*" ~/.bashrc || echo 'export PS1="${RESET}${GREEN}\u@\h${NORMAL}:${CYAN}\w${PURPLE}\$(__git_ps1)${NORMAL}\$ "' >> ~/.bashrc
-
 fi
 # on macOS / zsh
 if [ -f ~/.zshrc ]; then
     [[ -f ~/.zshrc && ! $(grep "export LSCOLORS=" ~/.zshrc) ]]    && echo "export LSCOLORS=aDxfxcxdxbxegedabagacad" >> ~/.zshrc && echo "Added LSCOLORS to .zshrc."
 fi
 # -----------------------------------------------------------
-# Better bash history
+# Better bash history: directly update the history and keep a longer history
 if [ -f ~/.bashrc ]; then
     grep -q "shopt -s histappend" ~/.bashrc || echo 'shopt -s histappend' >> ~/.bashrc
     grep -q "shopt -s cmdhist" ~/.bashrc || echo 'shopt -s cmdhist' >> ~/.bashrc
