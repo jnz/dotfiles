@@ -21,7 +21,7 @@ Adding to `.bashrc`:
 
     export LS_COLORS="$LS_COLORS:di=30;43"
 
-With `di` stands for directory `30;43` are the ANSI color codes for black text and yellow/orange/brown background.
+With `di` stands for directory `30;43` are the ANSI color codes for black text (`30`) and an orange (`43`) background.
 I don't know why folders are by default dark blue, which is hard to read, e.g. on a laptop outdoors on a sunny day. The new settings are on the left of the following image, the Ubuntu defaults on the right:
 
 ![colorchanges](img/color_changes.png)
@@ -33,13 +33,7 @@ Adding to `.bashrc`:
 
     alias ls='ls --color=auto --group-directories-first --human-readable'
 
-This includes better defaults for `ls` (group folders first and show them in a brown/orange color, see screenshot above), use human readable file sizes: e.g. `26M` instead of `27035267` bytes. See here:
-
-    -rwxr-xr-x  1 jan jan  26M Jun  9 21:17  DroneVideo.mp4
-
-vs.
-
-    -rwxr-xr-x  1 jan jan 27035267 Jun  9 21:17  DroneVideo.mp4
+This includes better defaults for `ls` (group folders first, see screenshot above) and use human readable file sizes: e.g. `26M` instead of `27035267` bytes.
 
 Show current git branch in prompt
 ---------------------------------
