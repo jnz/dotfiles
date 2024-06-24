@@ -14,7 +14,7 @@ if [ -f ~/.bashrc ]; then
     grep -q "export VISUAL" ~/.bashrc || echo 'export VISUAL=vi' >> ~/.bashrc
     grep -q "export EDITOR" ~/.bashrc || echo 'export EDITOR="$VISUAL"' >> ~/.bashrc
     # Default color for folders is hard to read, change to yellow/orange
-    grep -q "export LS_COLORS=" ~/.bashrc || echo 'export LS_COLORS="$LS_COLORS:di=30;43:ow=30;42"' >> ~/.bashrc
+    grep -q "export LS_COLORS=" ~/.bashrc || echo 'export LS_COLORS="$LS_COLORS:di=30;43"' >> ~/.bashrc
     # auto-correct spelling mistakes in directory names:
     grep -q "shopt -s cdspell" ~/.bashrc || echo "shopt -s cdspell" >> ~/.bashrc
     if ! grep -q "~/.local/bin/" ~/.bashrc; then
