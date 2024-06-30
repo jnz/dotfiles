@@ -5,15 +5,6 @@ Just my private repository of typical config settings.
 
     source 00.txt
 
-Philosophy
-----------
-
- * Single setup script
- * Setup script can be run multiple times without adding the same settings to the config files
- * Lightweight changes, e.g. no fancy plugins or fonts required, tries to stick to the defaults and default tools
- * Sensible settings that should be the default (in my opinion) 
- * Does not require admin rights for machines without sudo access
-
 Fix dark blue folders
 ---------------------
 
@@ -82,6 +73,14 @@ By default grep is searching also in git repositories and tags files, which typi
 So adding an alias for `grep` to exclude `.git` directories and `tags` files in `.bashrc`:
 
     alias grep='grep --color=auto --exclude-dir=".git" --exclude=tags'
+
+Setting workspace switching shortcuts to match Windows style
+------------------------------------------------------------
+
+Use `Ctrl + Win + Left` or `Ctrl + Win + Right` to switch between virtual desktops:
+
+    gsettings set org.gnome.desktop.wm.keybindings switch-to-workspace-left "['<Control><Super>Left']"
+    gsettings set org.gnome.desktop.wm.keybindings switch-to-workspace-right "['<Control><Super>Right']"
 
 Other
 -----

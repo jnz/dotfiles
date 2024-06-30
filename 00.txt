@@ -271,6 +271,15 @@ ask_yes_no() {
 # -----------------------------------------------------------
 {
     set -e
+    if ask_yes_no "Add Gnome Shortcuts Ctrl-Win-Left/Right to switch virtual desktops?"; then
+        echo "Setting workspace switching shortcuts to match Windows style."
+        gsettings set org.gnome.desktop.wm.keybindings switch-to-workspace-left "['<Control><Super>Left']"
+        gsettings set org.gnome.desktop.wm.keybindings switch-to-workspace-right "['<Control><Super>Right']"
+    fi
+} || true
+# -----------------------------------------------------------
+{
+    set -e
     if ask_yes_no "Do you want to install Python via apt-get?"; then
         # Virtual PIP environment
         # Setup
