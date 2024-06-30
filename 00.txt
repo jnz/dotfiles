@@ -278,6 +278,9 @@ ask_yes_no() {
         echo "Enable Alt modifier to drag/resize windows"
         gsettings set org.gnome.desktop.wm.preferences mouse-button-modifier '<Alt>'
         gsettings set org.gnome.desktop.wm.preferences resize-with-right-button true
+        echo "Switching windows with Alt+Tab"
+        gsettings set org.gnome.desktop.wm.keybindings switch-windows "['<Alt>Tab']"
+        gsettings set org.gnome.desktop.wm.keybindings switch-windows-backward "['<Shift><Alt>Tab']"
     fi
 } || true
 # -----------------------------------------------------------

@@ -90,6 +90,12 @@ Press `Alt` and left click to move a window or right click to resize it:
     gsettings set org.gnome.desktop.wm.preferences mouse-button-modifier '<Alt>'
     gsettings set org.gnome.desktop.wm.preferences resize-with-right-button true
 
+Switching windows with Alt+Tab
+------------------------------
+
+    gsettings set org.gnome.desktop.wm.keybindings switch-windows "['<Alt>Tab']"
+    gsettings set org.gnome.desktop.wm.keybindings switch-windows-backward "['<Shift><Alt>Tab']"
+
 Other
 -----
 
