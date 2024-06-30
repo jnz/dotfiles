@@ -282,6 +282,11 @@ ask_yes_no() {
         gsettings set org.gnome.desktop.wm.keybindings switch-windows "['<Alt>Tab']"
         gsettings set org.gnome.desktop.wm.keybindings switch-windows-backward "['<Shift><Alt>Tab']"
         gsettings set org.gnome.shell.app-switcher current-workspace-only false
+        # echo "Screenshot Default"
+        # gsettings set org.gnome.settings-daemon.plugins.media-keys custom-keybindings "['/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom-screenshot-area/']"
+        # dconf write /org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom-screenshot-area/name "'Screenshot Area'"
+        # dconf write /org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom-screenshot-area/command "'gnome-screenshot -a'"
+        # dconf write /org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom-screenshot-area/binding "'<Super><Shift>s'"
     fi
 } || true
 # -----------------------------------------------------------
