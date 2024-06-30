@@ -271,10 +271,13 @@ ask_yes_no() {
 # -----------------------------------------------------------
 {
     set -e
-    if ask_yes_no "Add Gnome Shortcuts Ctrl-Win-Left/Right to switch virtual desktops?"; then
+    if ask_yes_no "Add custom Gnome shortcuts?"; then
         echo "Setting workspace switching shortcuts to match Windows style."
         gsettings set org.gnome.desktop.wm.keybindings switch-to-workspace-left "['<Control><Super>Left']"
         gsettings set org.gnome.desktop.wm.keybindings switch-to-workspace-right "['<Control><Super>Right']"
+        echo "Enable Alt modifier to drag/resize windows"
+        gsettings set org.gnome.desktop.wm.preferences mouse-button-modifier '<Alt>'
+        gsettings set org.gnome.desktop.wm.preferences resize-with-right-button true
     fi
 } || true
 # -----------------------------------------------------------

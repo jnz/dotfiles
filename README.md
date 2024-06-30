@@ -82,6 +82,14 @@ Use `Ctrl + Win + Left` or `Ctrl + Win + Right` to switch between virtual deskto
     gsettings set org.gnome.desktop.wm.keybindings switch-to-workspace-left "['<Control><Super>Left']"
     gsettings set org.gnome.desktop.wm.keybindings switch-to-workspace-right "['<Control><Super>Right']"
 
+Move and resize Gnome windows with the Alt key
+----------------------------------------------
+
+Press `Alt` and left click to move a window or right click to resize it:
+
+    gsettings set org.gnome.desktop.wm.preferences mouse-button-modifier '<Alt>'
+    gsettings set org.gnome.desktop.wm.preferences resize-with-right-button true
+
 Other
 -----
 
