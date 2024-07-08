@@ -230,6 +230,13 @@ ask_yes_no() {
         mkdir -p ~/.config/Code/User
         ln -s ~/.vim/vscode/settings.json ~/.config/Code/User/settings.json
         ln -s ~/.vim/vscode/keybindings.json ~/.config/Code/User/keybindings.json
+        if ask_yes_no "Do you want to init neovim?"; then
+            CONFIG_DIR="$HOME/.config/nvim"
+            VIMRC="$HOME/.vim/vimrc"
+            mkdir -p "$CONFIG_DIR"
+            ln -sf "$VIMRC" "$CONFIG_DIR/init.vim"
+            echo "Neovim is now set to use your ~/.vim/vimrc"
+        fi
     fi
 } || true
 # -----------------------------------------------------------
