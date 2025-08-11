@@ -14,7 +14,7 @@ if [ -f ~/.bashrc ]; then
     grep -q "export VISUAL" ~/.bashrc || echo 'export VISUAL=vi' >> ~/.bashrc
     grep -q "export EDITOR" ~/.bashrc || echo 'export EDITOR="$VISUAL"' >> ~/.bashrc
     # Default color for folders is hard to read, change to yellow/orange
-    grep -q "export LS_COLORS=" ~/.bashrc || echo 'export LS_COLORS="$LS_COLORS:di=30;43"' >> ~/.bashrc
+    grep -q "export LS_COLORS=" ~/.bashrc || echo 'export LS_COLORS="$LS_COLORS:di=30;43:ow=30;43:tw=30;43"' >> ~/.bashrc
     # auto-correct spelling mistakes in directory names:
     grep -q "shopt -s cdspell" ~/.bashrc || echo "shopt -s cdspell" >> ~/.bashrc
     if ! grep -q "~/.local/bin/" ~/.bashrc; then
@@ -103,9 +103,10 @@ ask_yes_no() {
         echo 'Creating ~/nas directory'
         mkdir -p ~/nas
         chmod 750 nas
-        if ! grep -q "//192.168.0.15/home /home/$USER/nas" /etc/fstab; then
+        if ! grep -q "//192.168.0.17/home /home/$USER/nas" /etc/fstab; then
             echo Adding home drive to /etc/fstab
-            sudo sh -c "echo //192.168.0.15/home /home/$USER/nas cifs user,noauto,credentials=/home/$USER/.smbcredentials,iocharset=utf8 0 0 >> /etc/fstab"
+            sudo sh -c "echo //192.168.0.17/home /home/$USER/nas cifs user,noauto,credentials=/home/$USER/.smbcredentials,iocharset=utf8 0 0 >> /etc/fstab"
+            sudo sh -c "echo #//192.168.0.17/home /home/$USER/nas cifs noauto,x-systemd.automount,_netdev,credentials=/home/$USER/.smbcredentials,iocharset=utf8,uid=1000,gid=1000,file_mode=0600,dir_mode=0700,nofail 0 0"
         fi
         echo "Creating file: .smbcredentials password=XXXXX is not added, so that we don't store a plaintext password here"
         echo username=jan > ~/.smbcredentials
@@ -230,13 +231,6 @@ ask_yes_no() {
         mkdir -p ~/.config/Code/User
         ln -s ~/.vim/vscode/settings.json ~/.config/Code/User/settings.json
         ln -s ~/.vim/vscode/keybindings.json ~/.config/Code/User/keybindings.json
-        if ask_yes_no "Do you want to init neovim?"; then
-            CONFIG_DIR="$HOME/.config/nvim"
-            VIMRC="$HOME/.vim/vimrc"
-            mkdir -p "$CONFIG_DIR"
-            ln -sf "$VIMRC" "$CONFIG_DIR/init.vim"
-            echo "Neovim is now set to use your ~/.vim/vimrc"
-        fi
     fi
 } || true
 # -----------------------------------------------------------
