@@ -10,9 +10,10 @@ Fix dark blue folders
 
 Adding to `.bashrc`:
 
-    export LS_COLORS="$LS_COLORS:di=30;43"
+    export LS_COLORS="$LS_COLORS:di=30;43:ow=30;43:tw=30;43"
 
 With `di` stands for directory `30;43` are the ANSI color codes for black text (`30`) and an orange (`43`) background.
+`ow` is world-writable directory. `tw` is world-writable directory with sticky bit (e.g. /tmp).
 I don't know why folders are by default dark blue, which is hard to read, e.g. on a laptop outdoors on a sunny day. The new settings are on the left of the following image, the Ubuntu defaults on the right:
 
 ![colorchanges](img/color_changes.png)
